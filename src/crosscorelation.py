@@ -42,30 +42,8 @@ def create_x(T0, k0, N, SNR):
             x[k] = noise[k]
     return x
 
-# probably delete this
-def my_correlation(u, v):
-    # function assumes that that len(v) < len(u)
-    # if not we swap them
-    if len(v) > len(u):
-        temp = u
-        u = v
-        v = temp
-    corr = np.zeros(len(u) + len(v) - 1)
-    for k in range(len(u) + len(v) - 1):
-        val = 0
-        if k < len(v):
-            for i in range(k + 1):
-                val += u[i] * v[k - i]
-        if k >= len(v) and k < len(u):
-            for i in range(k - len(v) + 1, k + 1):
-                val += u[i] * v[k - i]
-        if k >= len(u):
-            for i in range(k - len(v) + 1, len(u)):
-                val += u[i] * v[k - i]
-        corr[k] = val
-    return corr
 
-
+# useless function, depricated
 def corr_cosinus(x, s):
     M = np.zeros(len(x) - len(s))
     for l in range(0, len(x) - len(s)):
@@ -164,7 +142,7 @@ if __name__ == '__main__':
 # Questions 2.1 and 2.2
     x = create_impulse_signal(100, 50)
     sT = create_impulse_signal(40, 20)
-    subx = correlate(x, sT, mode = 'same')
+    subx = correlate(x, sT, mode = 'valid')
     print("Maximum correlation in subvector of x with length " + str(len(subx))) # shit here
     print(subx)
     show_complex_plot([x, sT, subx],
@@ -180,20 +158,22 @@ if __name__ == '__main__':
 # Question 2.4
     M = corr_cosinus(x, sT)
     print("argmax(M(x_l, sT)) = " + str(np.argmax(M)))
+    M = correlate(x, sT, mode='valid')
+    print("argmax(M(x_l, sT)) = " + str(np.argmax(M)))
 
     print("Question 3")
 # Question 3.4
     sigma = SNR(-5)
     x = create_x(20, 60, 200, sigma)
     period = create_one_period_sin_signal(20)
-    C = correlate(x, period, mode = "same")
+    C = correlate(x, period, mode = "valid")
     show_complex_plot([x, period, C],
                       titles=["Noisy signal", "One period sinus signal", "Correlation of period and x"],
                       xlabels=["k", "k", "k"],
                       ylabels=["x[k]", "period[k]", "C[k]"])
 
 # Question 3.5
-    M = corr_cosinus(x, period)
+    M = correlate(x / np.sqrt(energy(x)), period / np.sqrt(energy(period)), "valid")
     print("max(M(x_l, sT)) = " + str(np.max(M)))
     print("argmax(M(x_l, sT)) = " + str(np.argmax(M)))
 
