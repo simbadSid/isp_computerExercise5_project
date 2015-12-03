@@ -156,10 +156,9 @@ if __name__ == '__main__':
     print("E(sT) = " + str(energy(sT)))
 
 # Question 2.4
-    M = corr_cosinus(x, sT)
-    print("argmax(M(x_l, sT)) = " + str(np.argmax(M)))
     M = correlate(x, sT, mode='valid')
-    print("argmax(M(x_l, sT)) = " + str(np.argmax(M)))
+    print("l* = max(M(x_l, sT)) = " + str(np.max(M)))
+    print("index of l* = argmax(M(x_l, sT)) = " + str(np.argmax(M)))
 
     print("Question 3")
 # Question 3.4
@@ -174,8 +173,8 @@ if __name__ == '__main__':
 
 # Question 3.5
     M = correlate(x / np.sqrt(energy(x)), period / np.sqrt(energy(period)), "valid")
-    print("max(M(x_l, sT)) = " + str(np.max(M)))
-    print("argmax(M(x_l, sT)) = " + str(np.argmax(M)))
+    print("C* = max(M(x_l, sT)) = " + str(np.max(M)))
+    print("index of C* = argmax(M(x_l, sT)) = " + str(np.argmax(M)))
 
     print("Question 4 - from here code is not good now")
 # Question 4.1
