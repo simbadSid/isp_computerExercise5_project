@@ -30,7 +30,7 @@ def SNR(SNR_DB):
     return 10 ** (SNR_DB / 10.)
 
 
-def createX(T0, k0, N, SNR):
+def create_x(T0, k0, N, SNR):
     sig = create_one_period_sin_signal(T0)
     var = p(sig, T0) / SNR
     noise = np.random.normal(0, scale=var, size=N)
@@ -42,8 +42,8 @@ def createX(T0, k0, N, SNR):
             x[k] = noise[k]
     return x
 
-
-def correlation(u, v):
+# probably delete this
+def my_correlation(u, v):
     # function assumes that that len(v) < len(u)
     # if not we swap them
     if len(v) > len(u):
@@ -66,29 +66,15 @@ def correlation(u, v):
     return corr
 
 
-def M_corr(x, s):
+def corr_cosinus(x, s):
     M = np.zeros(len(x) - len(s))
-    # max_val = -1
-    # max_ind = 0
     for l in range(0, len(x) - len(s)):
-        val = np.dot(x[l : l + len(s)], s) / (np.sqrt(np.sum(np.square(x[l : l + len(s)]))) * np.sqrt(np.sum(np.square(s))))
-        # if M > max_val:
-            # max_val = M
-            # max_ind = l
-        # print(M)
-        M[l] = val
-    # return (max_val, max_ind)
+        denominator = (np.sqrt(np.sum(np.square(x[l : l + len(s)]))) * np.sqrt(np.sum(np.square(s))))
+        if denominator != 0:
+            M[l] = np.dot(x[l : l + len(s)], s) / denominator
+        else:
+            M[l] = -float('Inf')
     return M
-
-
-def max_correlation(C):
-    max = -1
-    k = 0
-    for i in range(len(C)):
-        if C[i] > max:
-            max = C[i]
-            k = i
-    return (max, k)
 
 
 def read_pgm(filename, byteorder='>'):
@@ -141,47 +127,77 @@ def display_image(image):
         # plt.savefig('../output/img.png')
     plt.show()
 
+
+def show_complex_plot(ordinates, titles=None, xlabels=None, ylabels=None, show_complex=False):
+    plt.figure()
+    for i in range(len(ordinates)):
+        xAxis = np.arange(0, len(ordinates[i]))
+        # if i == 1: # here only
+            # xAxis = np.append(np.zeros(k), np.arrange)
+        plot = plt.subplot(len(ordinates) * 100 + 11 + i)
+        plot.set_xlim([0, len(ordinates[0])])
+        if show_complex:
+            plt.plot(xAxis, np.abs(ordinates[i]), 'g', label='abs')
+            plt.plot(xAxis, np.real(ordinates[i]), 'r', label='real')
+            plt.plot(xAxis, np.imag(ordinates[i]), 'b', label='imag')
+            plt.plot(xAxis, np.angle(ordinates[i]), 'y', label='angle')
+        else:
+            plt.plot(xAxis, ordinates[i])
+        if titles:
+            plt.title(titles[i])
+        if xlabels:
+            plt.xlabel(xlabels[i])
+        if ylabels:
+            plt.ylabel(ylabels[i])
+        plt.grid()
+
+    plt.tight_layout()
+    # if SAVE_IMAGE:
+        # plt.savefig('../output/img_complex.png')
+    plt.show()
+
+
 if __name__ == '__main__':
+    print("Question 2")
 # Questions 2.1 and 2.2
     x = create_impulse_signal(100, 50)
     sT = create_impulse_signal(40, 20)
     subx = correlate(sT, x, mode = 'same')
-    print("Maximum correlation in subvector of x with length " + str(len(subx)))
+    print("Maximum correlation in subvector of x with length " + str(len(subx))) # shit here
     print(subx)
 
 # Question 2.3
     print("E(x) = " + str(energy(x)))
     print("E(sT) = " + str(energy(sT)))
 
+# Question 2.4
+    M = corr_cosinus(x, sT)
+    print("argmax(M(x_l, sT)) = " + str(np.argmax(M)))
+
+    print("Question 3")
 # Question 3.4
-    val = 10 * np.log(5) / np.log(10)
-    # val = SNR(-5)
-    x = createX(20, 60, 200, val)
+    sigma = SNR(-5)
+    x = create_x(20, 60, 200, sigma)
     period = create_one_period_sin_signal(20)
-    # C = correlation(x, period)
     C = correlate(x, period, mode = "same")
-    # display_plot(range(len(x)), x, title="Noisy signal", xlabel="k", ylabel="x[k]")
-    # display_plot(range(len(period)), period, title="One period sinus signal", xlabel="k", ylabel="period[k]")
-    # display_plot(range(len(C)), C, title="Correlation of period and x", xlabel="k", ylabel="C[k]")
+    show_complex_plot([x, period, C],
+                      titles=["Noisy signal", "One period sinus signal", "Correlation of period and x"],
+                      xlabels=["k", "k", "k"],
+                      ylabels=["x[k]", "period[k]", "C[k]"])
 
 # Question 3.5
-    max_val = np.max(C)
-    max_index = np.argmax(C)
-    # (max_val, max_index) = max_correlation(C)
-    print(max_val, max_index) # WTF?
+    M = corr_cosinus(x, period)
+    print("max(M(x_l, sT)) = " + str(np.max(M)))
+    print("argmax(M(x_l, sT)) = " + str(np.argmax(M)))
 
-    M = M_corr(x, period)
-    max_val = np.max(M)
-    max_index = np.argmax(M)
-    print(max_val, max_index)
-
+    print("Question 4 - from here code is not good now")
 # Question 4.1
     img = read_pgm("../input/FindWaldo1.pgm")
     pattern = read_pgm("../input/WadoTarget1.pgm")
-    display_image(img)
-    display_image(pattern)
+    # display_image(img)
+    # display_image(pattern)
     corr_2d = correlate2d(img, pattern, mode="same")
-    display_image(corr_2d)
+    # display_image(corr_2d)
     print(np.max(corr_2d), np.argmax(corr_2d))
     # [y,x] = np.unravel_index(np.argmax(map), corr_2d.map)
     # print(y)
