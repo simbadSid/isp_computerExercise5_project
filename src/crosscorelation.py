@@ -128,7 +128,7 @@ def display_image(image):
     plt.show()
 
 
-def show_complex_plot(ordinates, titles=None, xlabels=None, ylabels=None, show_complex=False):
+def show_complex_plot(ordinates, titles=None, xlabels=None, ylabels=None, ylim=None, show_complex=False):
     plt.figure()
     for i in range(len(ordinates)):
         xAxis = np.arange(0, len(ordinates[i]))
@@ -143,6 +143,8 @@ def show_complex_plot(ordinates, titles=None, xlabels=None, ylabels=None, show_c
             plt.plot(xAxis, np.angle(ordinates[i]), 'y', label='angle')
         else:
             plt.plot(xAxis, ordinates[i])
+        if ylim:
+            plot.set_ylim(ylim)
         if titles:
             plt.title(titles[i])
         if xlabels:
@@ -162,9 +164,14 @@ if __name__ == '__main__':
 # Questions 2.1 and 2.2
     x = create_impulse_signal(100, 50)
     sT = create_impulse_signal(40, 20)
-    subx = correlate(sT, x, mode = 'same')
+    subx = correlate(x, sT, mode = 'same')
     print("Maximum correlation in subvector of x with length " + str(len(subx))) # shit here
     print(subx)
+    show_complex_plot([x, sT, subx],
+                       titles=["Impulse signal of length 100 and peak on 50", "Impulse signal of length 40 and peak on 20", "Correlation"],
+                       xlabels=["k", "k", "k"],
+                       ylabels=["x[k]", "sT[k]", "C[k]"],
+                       ylim=[-0.1, 1.1])
 
 # Question 2.3
     print("E(x) = " + str(energy(x)))
